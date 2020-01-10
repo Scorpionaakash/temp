@@ -1,0 +1,14 @@
+#descriptive analysis on Data
+import numpy import pandas as pd import matplotlib.pyplot as plt
+print("\nimporting data from excel data sources....\n")
+df1=pd.read_excel("1b.xlsx")
+print(df1) df1.hist() plt.show() plt.plot(df1)
+plt.show
+print("=========Sum==========")
+print(df1.sum())
+print("=========Standard Deviation==========") print(df1.std())
+print("\nimporting data from csv ....\n") df2=pd.read_csv("1bcsv.csv")
+print(df2)
+print("=========Mean==========") print(df2.mean())
+print("=========Describe==========")
+print(df2.describe())
