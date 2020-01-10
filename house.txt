@@ -1,0 +1,347 @@
+#Import data from different data sources
+import pandas as pd
+import matplotlib.pyplot as plt
+print("\nimporting data from excel data sources....\n")
+df1=pd.read_excel("Book1.xlsx")
+print(df1)
+df1.hist()
+plt.show()
+plt.plot(df1)
+plt.show
+print("=========Sum==========")
+print(df1.sum())
+print("=========Standard Deviation==========")
+print(df1.std())
+print("\nimporting data from csv ....\n")
+df2=pd.read_csv("Book2.csv")
+print(df2)
+print("=========Mean==========")
+print(df2.mean())
+print("=========Describe==========")
+print(df2.describe())
+
+
+#Create a survey form using Google form and collect the responses in excel file
+1.Download the excel file where the survey responses are collected.
+2.Then convert male and female using below code
+import pandas as pd
+file_open = open("CRM.csv", "r",)
+data = pd.read_csv(file_open, sep = ",")
+file_open.close()
+gender = {'Male': 0,'Female': 1}
+data.Gender = [gender[item]
+for item in data.Gender]
+data.to_csv("CRMconvrt.csv")
+print("DONE")
+3.Perform descriptive analysis on data and creating histogram.
+
+#Perform suitable analysis of given secondary data.
+1) Select data analysis and perform Descriptive statistics
+2) Linear Regression on secondary data. select Residual and Normal Probability. 
+3) Select Data Analysis select ‘Histogram’ click OK.
+4) Go to insert tab->chart->pie chart
+
+
+#one sample t-test
+from scipy.stats import ttest_1samp import numpy as np ages = np.genfromtxt('ages.csv') print(ages)
+ages_mean = np.mean(ages) print("Actual Average of our data: ")
+print(ages_mean)
+muavg=30
+print("In null hypothesis we assume the average to be:") print(muavg)
+tset, pval = ttest_1samp(ages, muavg) print('p-values == ',pval) 
+if pval< 0.05: # alpha value is 0.05 
+print("reject null hypothesis") 
+else: print("accept null hypothesis")
+
+#t-test comparing two means for independent samples.
+Given data
+1.Go to data tab and select data analysis-> select two sample assuming unequal variances.
+2.Select input ranges for variable 1 and input ranges for variable 2 give output range and click ok.
+
+#testing of hypothesis using paired t-test.
+Given data
+1.Go to data tab->Data analysis->t-test paired two for sample means Give variable ranges and click ok.
+
+#hypothesis using chi-squared goodness of-fit test
+import numpy as np
+import pandas as pd
+import scipy.stats as stats
+national = pd.DataFrame(["white"]*100000 + ["hispanic"]*60000 +\
+["black"]*50000 + ["asian"]*15000 + ["other"]*35000)
+print( "National Data")
+print(national)
+minnesota = pd.DataFrame(["white"]*600 + ["hispanic"]*300 + \
+["black"]*250 +["asian"]*75 + ["other"]*150)
+print( "Minnesota Data")
+print(minnesota)
+national_table = pd.crosstab(index=national[0], columns="count")
+minnesota_table = pd.crosstab(index=minnesota[0], columns="count")
+print( "National Table")
+print(national_table)
+print(" ")
+print( "National Table length")
+print(len(national))
+print( "Minnesota Table")
+print(minnesota_table)
+print( "Minnesota Table length")
+print(len(minnesota))
+observed = minnesota_table
+national_ratios = national_table/len(national) # Get population ratios
+expected = national_ratios * len(minnesota) # Get expected counts
+print("Expected array")
+print(expected)
+chi_squared_stat = (((observed-expected)**2)/expected).sum()
+print("")
+print("Chi square Statistics:")
+print(chi_squared_stat)
+crit = stats.chi2.ppf(q = 0.95, # Find the critical value for 95% confidence*
+df = 4) # Df = number of variable categories - 1
+print("Critical value")
+print(crit)
+p_value = 1 - stats.chi2.cdf(x=chi_squared_stat,df=4) # Find the p-value
+print("P value",p_value)
+print("")
+print("Chi square Statistics: provide observed and expected count: Direct method:")
+print(stats.chisquare(f_obs= observed,f_exp= expected)) # Array of expected counts
+
+#hypothesis using chi-squared test of independence
+import numpy as np
+import pandas as pd
+import scipy.stats as stats
+np.random.seed(10)
+# Sample data randomly at fixed probabilities
+voter_race = np.random.choice(a= ["asian","black","hispanic","other","white"],
+p = [0.05, 0.15 ,0.25, 0.05, 0.5],
+size=1000)
+# Sample data randomly at fixed probabilities
+voter_party = np.random.choice(a= ["democrat","independent","republican"],
+p = [0.4, 0.2, 0.4],
+size=1000)
+voters = pd.DataFrame({"race":voter_race,
+"party":voter_party})
+voter_tab = pd.crosstab(voters.race, voters.party, margins = True)
+voter_tab.columns = ["democrat","independent","republican","row_totals"]
+voter_tab.index = ["asian","black","hispanic","other","white","col_totals"]
+observed = voter_tab.iloc[0:5,0:3] # Get table without totals for later use
+print("Voter Tab: ")
+print(voter_tab)
+expected = np.outer(voter_tab["row_totals"][0:5], voter_tab.ix["col_totals"][0:3]) / 1000
+expected = pd.DataFrame(expected)
+expected.columns = ["democrat","independent","republican"]
+expected.index = ["asian","black","hispanic","other","white"]
+print("Expected: ")
+print(expected)
+chi_squared_stat = (((observed-expected)**2)/expected).sum().sum()
+print(chi_squared_stat)
+crit = stats.chi2.ppf(q = 0.95, # Find the critical value for 95% confidence*
+df = 8) # *
+print("Critical value")
+print(crit)
+p_value = 1 - stats.chi2.cdf(x=chi_squared_stat, df=8) # Find the p-value
+print("P value")
+print(p_value)
+print(stats.chi2_contingency(observed= observed))
+
+#one-sample Z test (Z-one Test)
+from statsmodels.stats import weightstats as stests
+import pandas as pd
+from scipy import stats
+df = pd.read_csv("blood_pressure.csv")
+df[['bp_before','bp_after']].describe()
+print(df)
+ztest ,pval = stests.ztest(df['bp_before'], x2=None, value=156)
+print(float(pval))
+if pval<0.05:
+	print("reject null hypothesis")
+else:
+	print("accept null hypothesis")
+
+#Two-sample Z test (Z-two Test)
+import pandas as pd
+from statsmodels.stats import weightstats as stests
+df = pd.read_csv("blood_pressure.csv")
+df[['bp_before','bp_after']].describe()
+print(df)
+ztest ,pval = stests.ztest(df['bp_before'], x2=df['bp_after'], value=0,alternative='two-sided')
+print(float(pval))
+if pval<0.05:
+    print("reject null hypothesis")
+else:
+    print("accept null hypothesis")
+
+#testing of hypothesis using One-way ANOVA
+1.Go to data tab->Data analysis->Anova: single factor
+2.Select input range. Grouped by ‘column’.  Check ‘Labels’  Give alpha value.  select output range.
+
+#testing of hypothesis using Two-way ANOVA
+1.Go to Data analysis->Anova: two-factor with replication->ok
+2.Select input ranges from A to C and give rows per sample 30.
+
+
+#Manova
+import pandas as pd
+fromstatsmodels.multivariate.manova import MANOVA
+df = pd.read_csv('iris.csv', index_col=0) df.columns = df.columns.str.replace(".", "_") df.head()
+print('~~~~~~~~ Data Set ~~~~~~~~') print(df)
+maov = MANOVA.from_formula('Sepal_Length + Sepal_Width + \ Petal_Length + Petal_Width ~ Species', data=df) print('~~~~~~~~ MANOVA Test Result ~~~~~~~~')
+print(maov.mv_test())
+
+#Random sampling for the given data and analyse it.. 'housing.csv'
+1) Fill the required data in excel.
+2) Add new column at 6th position à Label it as ‘Random’ à Apply rand() function to ‘Random’ column.
+1) Go to Home Tab  select Filter and sort  select customized filter.  Sort by random  click on OK.
+Select 1St `100 records for sampling.
+
+#Stratified sampling for the given data and analyse it.
+import pandas as pd # python's library for data manipulation and preprocessing
+import numpy as np # python's library for number crunching
+import matplotlib # python's library for visualisation
+import matplotlib.pyplot as plt
+plt.rcParams['axes.labelsize'] = 14
+plt.rcParams['xtick.labelsize'] = 12
+plt.rcParams['ytick.labelsize'] = 12
+import seaborn as sns # also python's library for visualisations
+color = sns.color_palette()
+sns.set_style('darkgrid')
+import sklearn #python's machine learning library
+from sklearn.model_selection import train_test_split
+housing = pd.read_csv('housing.csv') # reading the data into a pandas dataframe
+print("First 5 rowa")
+print(housing.head())# calling the first five rows of the dataset
+print("exploratory analysis")
+print(housing.info()) # exploratory analysis
+correlation_matrix = housing.corr() #creating a heatmap of the attributes in the dataset
+plt.subplots(figsize=(8,6))
+sns.heatmap(correlation_matrix, center=0, annot=True, linewidths=.3)
+plt.show()
+corr = housing.corr() # showing correlations by target variable
+print(corr['median_house_value'].sort_values(ascending=False))
+sns.distplot(housing.median_income) # showing the distribution of the median_income variable in the dataset
+plt.show() # check the distplot params though. see how you can make it prettier
+# Divide by 1.5 to limit the number of income categories
+housing["median_income_category"] = np.ceil(housing["median_income"] / 1.5)
+# showing the frequency of each category
+housing.median_income_category.value_counts().sort_index()
+housing["median_income_category"].where(housing["median_income_category"] < 5, 5.0, inplace=True)
+housing.median_income_category.value_counts().sort_index()
+from sklearn.model_selection import StratifiedShuffleSplit
+split = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+for train_index, test_index in split.split(housing, housing["median_income_category"]):
+	strat_train_set = housing.loc[train_index]
+	strat_test_set = housing.loc[test_index]
+	print(strat_test_set.head())
+def income_cat_props(data):
+	return data['median_income_category'].value_counts() / len(data)
+train_set, test_set = train_test_split(housing, test_size=0.2, random_state=42)
+compare_props = pd.DataFrame({
+"Overall": income_cat_props(housing),
+"Stratified": income_cat_props(strat_test_set),
+"Random": income_cat_props(test_set),
+}).sort_index()
+compare_props["Rand. %error"] = 100 * compare_props["Random"] / compare_props["Overall"] - 100
+compare_props["Strat. %error"] = 100 * compare_props["Stratified"] / compare_props["Overall"] - 100
+compare_props
+print("final op")
+print (compare_props)
+
+#Write a program for computing different correlation
+A)Positive correlation
+import numpy as np
+import matplotlib.pyplot as plt
+np.random.seed(1)
+# 1000 random integers between 0 and 50
+x = np.random.randint(0, 150, 1000)
+# Positive Correlation with some noise
+y = x + np.random.normal(0, 1, 1000)
+np.corrcoef(x, y)
+print(np.corrcoef(x, y))
+plt.scatter(x, y)
+plt.show()
+
+B)Negative correlation
+import numpy as np
+import matplotlib.pyplot as plt
+np.random.seed(1)
+# 1000 random integers between 0 and 50
+x = np.random.randint(0, 150, 1000)
+# Negative Correlation with some noise
+y = 100 - x + np.random.normal(0, 1, 1000)
+print(np.corrcoef(x, y))
+plt.scatter(x, y)
+plt.show()
+
+c)No-relation
+import numpy as np
+import matplotlib.pyplot as plt
+np.random.seed(1)
+x = np.random.randint(0, 50, 1000)
+y = np.random.randint(0, 50, 1000)
+print(np.corrcoef(x, y))
+plt.scatter(x, y, color='green')
+plt.show()
+
+#linear regression for prediction.
+1.rainfallFile
+2.Go to data-> Data Analysis and select Regression
+3.Select independent value X(Rainfall) and dependent value Y (Umbrellas sold) and select output Range
+
+#Polynomial regression for prediction
+1) Go to ‘insert’ tab ->select scatter graph.
+2) Select point on graph ->Right click and select ‘format trendline’. The popup window will open ->Select polynomial with order 3 ->Check ‘set intercept’ , ‘Display equation on chart’ , ‘Display R-square value on chart’.
+
+#multiple linear regression.
+1.DatasetforMultipleregression.xlsx TestIQSTUDYHOURS
+2.Click on data-> data analysis select regression give input range(Y) which is ranging from A to A and Select input Range (X) From B to C.
+
+
+
+Files Used: 
+
+Practical No. 1
+Part A.  data.xls / any file with numerical data will do, your choice. 
+Part B. Data.xlsx , samplecsv.csv
+
+Practical No.  2
+Part A. your google form file. 
+Part B. For2B_Sacramentorealestatetransactions.xlsx
+
+Practical No.  3
+Part A. ages.csv
+Part B. twotest.xlsx
+Part C. blood_pressure.csv
+
+Practical No. 4
+If using python, no need for external excel files. If using excel use the in the link given- in mail or follow manual. 
+Part A. 
+Follow manual for excel.
+Part B. follow manual for excel. Python code I have shared with you. 
+
+Practical No. 5
+Part A. blood_pressure.csv
+Part B. blood_pressure.csv
+
+Practical No. 6
+
+// for practical use file name : (for steps and understanding: ) 
+ANOVA and MANOVA Excel.docx. for all 3 parts use data as given in the file. 
+
+Part A. 
+Part B. 
+Part C. 
+
+Practical No. 7
+Part A. 'housing.csv'
+Part B. 'housing.csv'
+
+Practical No. 8
+No files required. 
+
+Practical No. 9
+Part A. 
+Part B.
+Both parts will use this data:  create a excel file and type this in it.
+ 
+Practical No.  10 
+DatasetforMultipleregression.xlsx
+
+
