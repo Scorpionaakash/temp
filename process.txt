@@ -1,0 +1,1990 @@
+#Cassandra
+Creating Data Model using Cassandra.
+
+Cassandra Data Model
+Cluster
+Cassandra database is distributed over several machines that operate together. The outermost container is known as the Cluster. For failure handling, every node contains a replica, and in case of a failure, the replica takes charge. Cassandra arranges the nodes in a cluster, in a ring format, and assigns data to them.
+
+Keyspace
+Keyspace is the outermost container for data in Cassandra. The basic attributes of a Keyspace in Cassandra are
+−
+􀁸 Replication factor
+− It is the number of machines in the cluster that will receive
+copies of the same data.
+􀁸 Replica placement strategy
+− It is nothing but the strategy to place replicas in the ring. We have strategies such as simple strategy (rack-aware strategy), old
+network topology strategy (rack-aware strategy), and network topology strategy (datacenter-shared strategy).
+􀁸 Column families
+− Keyspace is a container for a list of one or more column
+families. A column family, in turn, is a container of a collection of rows. Each row contains ordered columns. Column families represent the structure of your data. Each keyspace has at least one and often many column families.
+
+Column Family
+A column family is a container for an ordered collection of rows. Each row, in turn, is an ordered collection of columns. The following table lists the points that differentiate a column family from a table of relational databases.
+
+1.Go to Cassandra directory
+C:\apache-cassandra-3.11.4\bin
+
+2.Run Cassandra.bat file
+Open C:\apache-cassandra-3.11.4\bin\cqlsh.py with python 2.7 and run
+
+3.Creating a Keyspace using Cqlsh
+Create keyspace keyspace1 with replication = {‘class’:’SimpleStratergy’,
+‘replication_factor’: 3};
+Use keyspace1;
+
+Create table dept ( dept_id int PRIMARY KEY, dept_name text, dept_loc text);
+
+Create table emp ( emp_id int PRIMARY KEY, emp_name text, dept_id int, email
+text, phone text );
+
+Insert into dept (dept_id, dept_name, dept_loc) values (1001, 'Accounts', 'Mumbai');
+
+Insert into dept (dept_id, dept_name, dept_loc) values (1002, 'Marketing', 'Delhi');
+
+Insert into dept (dept_id, dept_name, dept_loc) values (1003, 'HR', 'Chennai');
+
+Insert into emp ( emp_id, emp_name, dept_id, email, phone ) values (1001, 'ABCD',1001, 'abcd@company.com', '1122334455');
+
+Insert into emp ( emp_id, emp_name, dept_id, email, phone ) values (1002, 'DEFG', 1001, 'defg@company.com', '2233445566');
+
+Insert into emp ( emp_id, emp_name, dept_id, email, phone ) values (1003, 'GHIJ', 1002, 'ghij@company.com', '3344556677');
+
+Insert into emp ( emp_id, emp_name, dept_id, email, phone ) values (1004, 'JKLM', 1002, 'jklm@company.com', '4455667788');
+
+Insert into emp ( emp_id, emp_name, dept_id, email, phone ) values (1005, 'MNOP',1003, 'mnop@company.com', '5566778899');
+
+Insert into emp ( emp_id, emp_name, dept_id, email, phone ) values (1006, 'MNOP',1003, 'mnop@company.com', '5566778844');
+
+select * from emp;
+select * from dept;
+
+update dept set dept_name='Human Resource' where dept_id=1003;
+select * from dept;
+
+delete from emp where emp_id = 1006;
+
+#Convert Data from HOURS 
+
+The Homogeneous Ontology for Recursive Uniform Schema (HORUS) is used as an internal data format structure that enables the framework to reduce the permutations of transformations required by the framework.
+The use of HORUS methodology results in a hub-and-spoke data transformation approach. External data formats are converted to HORUS format, and then a HORUS format is transformed into any other external format. The basic concept is to take native raw data and then transform it first to a single format. That means that there is only one format for text files, one format for JSON or XML, one format for images and video.
+Therefore, to achieve any-to-any transformation coverage, the framework’s only requirements are a dataformat- to-HORUS and HURUS-to- data-format converter.
+
+Source code is located in C:\VKHCG\05-DS\9999-Data directory
+
+Write Python / R Program to convert from the following formats to HORUS format:
+
+A. Text delimited CSV to HORUS format.
+
+Code:
+# Utility Start CSV to HORUS =================================
+# Standard Tools
+#=============================================================
+import pandas as pd
+# Input Agreement ============================================
+sInputFileName='C:/VKHCG/05-DS/9999-Data/Country_Code.csv'
+InputData=pd.read_csv(sInputFileName,encoding="latin-1")
+print('Input Data Values ===================================')
+print(InputData)
+print('=====================================================')
+# Processing Rules ===========================================
+ProcessData=InputData
+# Remove columns ISO-2-Code and ISO-3-CODE
+ProcessData.drop('ISO-2-CODE', axis=1,inplace=True)
+ProcessData.drop('ISO-3-Code', axis=1,inplace=True)
+# Rename Country and ISO-M49
+ProcessData.rename(columns={'Country': 'CountryName'}, inplace=True)
+ProcessData.rename(columns={'ISO-M49': 'CountryNumber'}, inplace=True)
+# Set new Index
+ProcessData.set_index('CountryNumber', inplace=True)
+# Sort data by CurrencyNumber
+ProcessData.sort_values('CountryName', axis=0, ascending=False, inplace=True)
+print('Process Data Values =================================')
+print(ProcessData)
+print('=====================================================')
+# Output Agreement ===========================================
+OutputData=ProcessData
+sOutputFileName='C:/VKHCG/05-DS/9999-Data/HORUS-CSV-Country.csv'
+OutputData.to_csv(sOutputFileName, index = False)
+print('CSV to HORUS - Done')
+# Utility done 
+
+B. XML to HORUS Format
+
+Code:
+# Utility Start XML to HORUS =================================
+# Standard Tools
+import pandas as pd
+import xml.etree.ElementTree as ET
+def df2xml(data):
+header = data.columns
+root = ET.Element('root')
+for row in range(data.shape[0]):
+entry = ET.SubElement(root,'entry')
+for index in range(data.shape[1]):
+schild=str(header[index])
+child = ET.SubElement(entry, schild)
+if str(data[schild][row]) != 'nan':
+child.text = str(data[schild][row])
+else:
+child.text = 'n/a'
+entry.append(child)
+result = ET.tostring(root)
+return result
+def xml2df(xml_data):
+root = ET.XML(xml_data)
+all_records = []
+for i, child in enumerate(root):
+record = {}
+for subchild in child:
+record[subchild.tag] = subchild.text
+all_records.append(record)
+return pd.DataFrame(all_records)
+sInputFileName='C:/VKHCG/05-DS/9999-Data/Country_Code.xml'
+InputData = open(sInputFileName).read()
+print('=====================================================')
+print('Input Data Values ===================================')
+print('=====================================================')
+print(InputData)
+print('=====================================================')
+#=============================================================
+# Processing Rules ===========================================
+#=============================================================
+ProcessDataXML=InputData
+# XML to Data Frame
+ProcessData=xml2df(ProcessDataXML)
+# Remove columns ISO-2-Code and ISO-3-CODE
+ProcessData.drop('ISO-2-CODE', axis=1,inplace=True)
+ProcessData.drop('ISO-3-Code', axis=1,inplace=True)
+# Rename Country and ISO-M49
+ProcessData.rename(columns={'Country': 'CountryName'}, inplace=True)
+ProcessData.rename(columns={'ISO-M49': 'CountryNumber'}, inplace=True)
+# Set new Index
+ProcessData.set_index('CountryNumber', inplace=True)
+# Sort data by CurrencyNumber
+ProcessData.sort_values('CountryName', axis=0, ascending=False, inplace=True)
+print('=====================================================')
+print('Process Data Values =================================')
+print('=====================================================')
+print(ProcessData)
+print('=====================================================')
+OutputData=ProcessData
+sOutputFileName='C:/VKHCG/05-DS/9999-Data/HORUS-XML-Country.csv'
+OutputData.to_csv(sOutputFileName, index = False)
+print('=====================================================')
+print('XML to HORUS - Done')
+print('=====================================================')
+# Utility done 
+
+C. JSON to HORUS Format
+Code:
+# Utility Start JSON to HORUS =================================
+# Standard Tools
+#=============================================================
+import pandas as pd
+# Input Agreement ============================================
+sInputFileName='C:/VKHCG/05-DS/9999-Data/Country_Code.json'
+InputData=pd.read_json(sInputFileName, orient='index', encoding="latin-1")
+print('Input Data Values ===================================')
+print(InputData)
+print('=====================================================')
+# Processing Rules ===========================================
+ProcessData=InputData
+# Remove columns ISO-2-Code and ISO-3-CODE
+ProcessData.drop('ISO-2-CODE', axis=1,inplace=True)
+ProcessData.drop('ISO-3-Code', axis=1,inplace=True)
+# Rename Country and ISO-M49
+ProcessData.rename(columns={'Country': 'CountryName'}, inplace=True)
+ProcessData.rename(columns={'ISO-M49': 'CountryNumber'}, inplace=True)
+# Set new Index
+ProcessData.set_index('CountryNumber', inplace=True)
+# Sort data by CurrencyNumber
+ProcessData.sort_values('CountryName', axis=0, ascending=False, inplace=True)
+print('Process Data Values =================================')
+print(ProcessData)
+print('=====================================================')
+# Output Agreement ===========================================
+OutputData=ProcessData
+sOutputFileName='c:/VKHCG/05-DS/9999-Data/HORUS-JSON-Country.csv'
+OutputData.to_csv(sOutputFileName, index = False)
+print('JSON to HORUS - Done')
+# Utility done ===============================================
+
+D. MySql Database to HORUS Format
+
+Code:
+# Utility Start Database to HORUS =================================
+# Standard Tools
+#=============================================================
+import pandas as pd
+import sqlite3 as sq
+# Input Agreement ============================================
+sInputFileName='C:/VKHCG/05-DS/9999-Data/utility.db'
+sInputTable='Country_Code'
+conn = sq.connect(sInputFileName)
+sSQL='select * FROM ' + sInputTable + ';'
+InputData=pd.read_sql_query(sSQL, conn)
+print('Input Data Values ===================================')
+print(InputData)
+print('=====================================================')
+# Processing Rules ===========================================
+ProcessData=InputData
+# Remove columns ISO-2-Code and ISO-3-CODE
+ProcessData.drop('ISO-2-CODE', axis=1,inplace=True)
+ProcessData.drop('ISO-3-Code', axis=1,inplace=True)
+# Rename Country and ISO-M49
+ProcessData.rename(columns={'Country': 'CountryName'}, inplace=True)
+ProcessData.rename(columns={'ISO-M49': 'CountryNumber'}, inplace=True)
+# Set new Index
+ProcessData.set_index('CountryNumber', inplace=True)
+# Sort data by CurrencyNumber
+ProcessData.sort_values('CountryName', axis=0, ascending=False, inplace=True)
+print('Process Data Values =================================')
+print(ProcessData)
+print('=====================================================')
+# Output Agreement ===========================================
+OutputData=ProcessData
+sOutputFileName='C:/VKHCG/05-DS/9999-Data/HORUS-CSV-Country.csv'
+OutputData.to_csv(sOutputFileName, index = False)
+print('Database to HORUS - Done')
+# Utility done ===============================================
+
+E. Picture (JPEG) to HORUS Format (Use SPYDER to run this program)
+
+Download pillow and scipy 
+
+Pip install pillow
+Pip install scipy==1.2.1
+
+ 
+Code:
+
+# Utility Start Picture to HORUS =================================
+# Standard Tools
+#=============================================================
+from scipy.misc import imread
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+# Input Agreement ============================================
+sInputFileName='C:/VKHCG/05-DS/9999-Data/Angus.jpg'
+InputData = imread(sInputFileName, flatten=False, mode='RGBA')
+print('Input Data Values ===================================')
+print('X: ',InputData.shape[0])
+print('Y: ',InputData.shape[1])
+print('RGBA: ', InputData.shape[2])
+print('=====================================================')
+# Processing Rules ===========================================
+ProcessRawData=InputData.flatten()
+y=InputData.shape[2] + 2
+x=int(ProcessRawData.shape[0]/y)
+ProcessData=pd.DataFrame(np.reshape(ProcessRawData, (x, y)))
+sColumns= ['XAxis','YAxis','Red', 'Green', 'Blue','Alpha']
+ProcessData.columns=sColumns
+ProcessData.index.names =['ID']
+print('Rows: ',ProcessData.shape[0])
+print('Columns :',ProcessData.shape[1])
+print('=====================================================')
+print('Process Data Values =================================')
+print('=====================================================')
+plt.imshow(InputData)
+plt.show()
+print('=====================================================')
+# Output Agreement ===========================================
+OutputData=ProcessData
+print('Storing File')
+sOutputFileName='C:/VKHCG/05-DS/9999-Data/HORUS-Picture.csv'
+OutputData.to_csv(sOutputFileName, index = False)
+print('=====================================================')
+print('Picture to HORUS - Done')
+print('=====================================================')
+
+F. Video to HORUS Format
+
+pip3 install opencv-python 
+
+Code:
+Movie to Frames
+# Utility Start Movie to HORUS (Part 1) ======================
+# Standard Tools
+#=============================================================
+import os
+import shutil
+import cv2
+#=============================================================
+sInputFileName='C:/VKHCG/05-DS/9999-Data/dog.mp4'
+sDataBaseDir='C:/VKHCG/05-DS/9999-Data/temp'
+if os.path.exists(sDataBaseDir):
+shutil.rmtree(sDataBaseDir)
+if not os.path.exists(sDataBaseDir):
+os.makedirs(sDataBaseDir)
+print('=====================================================')
+print('Start Movie to Frames')
+print('=====================================================')
+vidcap = cv2.VideoCapture(sInputFileName)
+success,image = vidcap.read()
+count = 0
+while success:
+success,image = vidcap.read()
+sFrame=sDataBaseDir + str('/dog-frame-' + str(format(count, '04d'))+ '.jpg')
+print('Extracted: ', sFrame)
+cv2.imwrite(sFrame, image)
+if os.path.getsize(sFrame) == 0:
+count += -1
+os.remove(sFrame)
+print('Removed: ', sFrame)
+if cv2.waitKey(10) == 27: # exit if Escape is hit
+break
+count += 1
+print('=====================================================')
+print('Generated : ', count, ' Frames')
+print('=====================================================')
+print('Movie to Frames HORUS - Done')
+print('=====================================================')
+# Utility done =========================================
+
+Now frames are created and need to load them into HORUS.
+
+Frames to Horus (Use SPYDER to run this program)
+# Utility Start Movie to HORUS (Part 2) ======================
+# Standard Tools
+#=============================================================
+from scipy.misc import imread
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+# Input Agreement ============================================
+sDataBaseDir='C:/VKHCG/05-DS/9999-Data/temp'
+f=0
+for file in os.listdir(sDataBaseDir):
+if file.endswith(".jpg"):
+f += 1
+sInputFileName=os.path.join(sDataBaseDir, file)
+print('Process : ', sInputFileName)
+InputData = imread(sInputFileName, flatten=False, mode='RGBA')
+print('Input Data Values ===================================')
+print('X: ',InputData.shape[0])
+print('Y: ',InputData.shape[1])
+print('RGBA: ', InputData.shape[2])
+print('=====================================================')
+# Processing Rules ===========================================
+ProcessRawData=InputData.flatten()
+y=InputData.shape[2] + 2
+x=int(ProcessRawData.shape[0]/y)
+ProcessFrameData=pd.DataFrame(np.reshape(ProcessRawData, (x, y)))
+ProcessFrameData['Frame']=file
+print('=====================================================')
+print('Process Data Values =================================')
+print('=====================================================')
+plt.imshow(InputData)
+plt.show()
+if f == 1:
+ProcessData=ProcessFrameData
+else:
+ProcessData=ProcessData.append(ProcessFrameData)
+if f > 0:
+sColumns= ['XAxis','YAxis','Red', 'Green', 'Blue','Alpha','FrameName']
+ProcessData.columns=sColumns
+print('=====================================================')
+ProcessFrameData.index.names =['ID']
+print('Rows: ',ProcessData.shape[0])
+print('Columns :',ProcessData.shape[1])
+print('=====================================================')
+# Output Agreement ===========================================
+OutputData=ProcessData
+print('Storing File')
+sOutputFileName='C:/VKHCG/05-DS/9999-Data/HORUS-Movie-Frame.csv'
+OutputData.to_csv(sOutputFileName, index = False)
+print('=====================================================')
+print('Processed ; ', f,' frames')
+print('=====================================================')
+print('Movie to HORUS - Done')
+print('=====================================================')
+
+Check the files from C:\VKHCG\05-DS\9999-Data\temp
+The movie clip is converted into 102 picture frames and then to HORUS format.
+
+
+#Fixer Utility
+import string
+import datetime as dt
+# 1 Removing leading or lagging spaces from a data entry
+print('#1 Removing leading or lagging spaces from a data entry');
+baddata = "    Data Science with too many spaces is bad!!!    "
+print('>',baddata,'<')
+cleandata=baddata.strip()
+print('>',cleandata,'<')
+# 2 Removing nonprintable characters from a data entry
+print('#2 Removing nonprintable characters from a data entry')
+printable = set(string.printable)
+baddata = "Data\x00Science with\x02 funny characters is \x10bad!!!"
+cleandata=''.join(filter(lambda x: x in string.printable,baddata))
+print('Bad Data : ',baddata);
+print('Clean Data : ',cleandata)
+# 3 Reformatting data entry to match specific formatting criteria.
+# Convert YYYY/MM/DD to DD Month YYYY
+print('# 3 Reformatting data entry to match specific formatting criteria.')
+baddate = dt.date(2019, 10, 31)
+baddata=format(baddate,'%Y-%m-%d')
+gooddate = dt.datetime.strptime(baddata,'%Y-%m-%d')
+gooddata=format(gooddate,'%d %B %Y')
+print('Bad Data : ',baddata)
+print('Good Data : ',gooddata)
+
+#Data Binning or Bucketing
+import numpy as np
+import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
+import scipy.stats as stats
+np.random.seed(0)
+# example data
+mu = 90 # mean of distribution
+sigma = 25 # standard deviation of distribution
+x = mu + sigma * np.random.randn(5000)
+num_bins = 25
+fig, ax = plt.subplots()
+# the histogram of the data
+n, bins, patches = ax.hist(x, num_bins, density=1)
+# add a 'best fit' line
+y = stats.norm.pdf(bins, mu, sigma)
+# mlab.normpdf(bins, mu, sigma)
+ax.plot(bins, y, '--')
+ax.set_xlabel('Example Data')
+ax.set_ylabel('Probability density')
+sTitle=r'Histogram ' + str(len(x)) + ' entries into ' + str(num_bins) + ' Bins: $\mu=' + str(mu) + '$, $\sigma=' +
+str(sigma) + '$'
+ax.set_title(sTitle)
+fig.tight_layout()
+sPathFig='C:/VKHCG/05-DS/4000-UL/0200-DU/DU-Histogram.png'
+fig.savefig(sPathFig)
+plt.show()
+
+
+#Avg of Data
+import pandas as pd
+################################################################
+InputFileName='IP_DATA_CORE.csv'
+OutputFileName='Retrieve_Router_Location.csv'
+Base='C:/VKHCG'
+print('################################')
+print('Working Base :',Base, ' using ')
+print('################################')
+sFileName=Base + '/01-Vermeulen/00-RawData/' + InputFileName
+print('Loading :',sFileName)
+IP_DATA_ALL=pd.read_csv(sFileName,header=0,low_memory=False,
+usecols=['Country','Place Name','Latitude','Longitude'], encoding="latin-1")
+IP_DATA_ALL.rename(columns={'Place Name': 'Place_Name'}, inplace=True)
+AllData=IP_DATA_ALL[['Country', 'Place_Name','Latitude']]
+print(AllData)
+MeanData=AllData.groupby(['Country', 'Place_Name'])['Latitude'].mean()
+print(MeanData)
+
+#Outlier Detetion 
+import pandas as pd
+################################################################
+InputFileName='IP_DATA_CORE.csv'
+OutputFileName='Retrieve_Router_Location.csv'
+Base='C:/VKHCG'
+print('################################')
+print('Working Base :',Base)
+print('################################')
+################################################################
+sFileName=Base + '/01-Vermeulen/00-RawData/' + InputFileName
+print('Loading :',sFileName)
+IP_DATA_ALL=pd.read_csv(sFileName,header=0,low_memory=False,
+usecols=['Country','Place Name','Latitude','Longitude'], encoding="latin-1")
+IP_DATA_ALL.rename(columns={'Place Name': 'Place_Name'}, inplace=True)
+LondonData=IP_DATA_ALL.loc[IP_DATA_ALL['Place_Name']=='London']
+AllData=LondonData[['Country', 'Place_Name','Latitude']]
+print('All Data')
+print(AllData)
+MeanData=AllData.groupby(['Country', 'Place_Name'])['Latitude'].mean()
+StdData=AllData.groupby(['Country', 'Place_Name'])['Latitude'].std()
+print('Outliers')
+UpperBound=float(MeanData+StdData)
+print('Higher than ', UpperBound)
+OutliersHigher=AllData[AllData.Latitude>UpperBound]
+print(OutliersHigher)
+LowerBound=float(MeanData-StdData)
+print('Lower than ', LowerBound)
+OutliersLower=AllData[AllData.Latitude<LowerBound]
+print(OutliersLower)
+print('Not Outliers')
+OutliersNot=AllData[(AllData.Latitude>=LowerBound) & (AllData.Latitude<=UpperBound)]
+print(OutliersNot)
+
+#Logging
+import sys
+import os
+import logging
+import uuid
+import shutil
+import time
+############################################################
+Base='C:/VKHCG'
+############################################################
+sCompanies=['01-Vermeulen','02-Krennwallner','03-Hillman','04-Clark']
+sLayers=['01-Retrieve','02-Assess','03-Process','04-Transform','05-Organise','06-Report']
+sLevels=['debug','info','warning','error']
+for sCompany in sCompanies:
+    sFileDir=Base + '/' + sCompany
+if not os.path.exists(sFileDir):
+    os.makedirs(sFileDir)
+for sLayer in sLayers:
+    log = logging.getLogger() # root logger
+for hdlr in log.handlers[:]: # remove all old handlers
+    log.removeHandler(hdlr)
+#----------------------------------------------------------------------------------
+sFileDir=Base + '/' + sCompany + '/' + sLayer + '/Logging'
+if os.path.exists(sFileDir):
+    shutil.rmtree(sFileDir)
+    time.sleep(2)
+if not os.path.exists(sFileDir):
+    os.makedirs(sFileDir)
+    skey=str(uuid.uuid4())
+    sLogFile=Base + '/' + sCompany + '/' + sLayer + '/Logging/Logging_'+skey+'.log'
+print('Set up:',sLogFile)
+# set up logging to file - 
+logging.basicConfig(level=logging.DEBUG,
+format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+datefmt='%m-%d %H:%M',
+filename=sLogFile,
+filemode='w')
+# define a Handler which writes INFO messages or higher to the sys.stderr
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+# set a format which is simpler for console use
+formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+# tell the handler to use this format
+console.setFormatter(formatter)
+# add the handler to the root logger
+logging.getLogger('').addHandler(console)
+# Now, we can log to the root logger, or any other logger. First the root...
+logging.info('Practical Data Science is fun!.')
+for sLevel in sLevels:
+    sApp='Apllication-'+ sCompany + '-' + sLayer + '-' + sLevel
+    logger = logging.getLogger(sApp)
+if sLevel == 'debug':
+        logger.debug('Practical Data Science logged a debugging message.')
+if sLevel == 'info':
+    logger.info('Practical Data Science logged information message.')
+if sLevel == 'warning':
+    logger.warning('Practical Data Science logged a warning message.')
+if sLevel == 'error':
+    logger.error('Practical Data Science logged an error message.')
+
+#Retrieve Superstep
+A. Perform the following data processing using R.
+
+Use R-Studio for the following:
+
+>library(readr)
+
+Warning message:package ‘readr’ was built under R version 3.4.4
+
+Load a table named IP_DATA_ALL.csv.
+
+>IP_DATA_ALL <- read_csv("C:/VKHCG/01-Vermeulen/00-RawData/IP_DATA_ALL.csv")
+
+Parsed with column specification:
+cols(
+ID = col_double(),
+Country = col_character(),
+`Place Name` = col_character(),
+`Post Code` = col_double(),
+Latitude = col_double(),
+Longitude = col_double(),
+`First IP Number` = col_double(),
+`Last IP Number` = col_double()
+)
+
+>View(IP_DATA_ALL)
+>spec(IP_DATA_ALL)
+
+cols(
+ID = col_double(),
+Country = col_character(),
+`Place Name` = col_character(),
+`Post Code` = col_double(),
+Latitude = col_double(),
+Longitude = col_double(),
+`First IP Number` = col_double(),
+`Last IP Number` = col_double()
+)
+
+This informs you that you have the following eight columns:
+• ID of type integer
+• Place name of type character
+• Post code of type character
+• Latitude of type numeric double
+• Longitude of type numeric double
+•	First IP number of type integer
+• Last IP number of type integer
+
+>library(tibble)
+>set_tidy_names(IP_DATA_ALL, syntactic = TRUE, quiet = FALSE)
+
+New names:
+Place Name -> Place.Name
+Post Code -> Post.Code
+First IP Number -> First.IP.Number
+Last IP Number -> Last.IP.Number
+
+This informs you that four of the field names are not valid and suggests new field names that are valid.
+You can fix any detected invalid column names by executing
+
+IP_DATA_ALL_FIX=set_tidy_names(IP_DATA_ALL, syntactic = TRUE, quiet = TRUE)
+
+By using command View(IP_DATA_ALL_FIX), you can check that you have fixed the columns. 
+
+The new table IP_DATA_ALL_FIX.csv will fix the invalid column names with valid names.
+
+ >sapply(IP_DATA_ALL_FIX, typeof)
+
+ID Country Place.Name Post.Code Latitude
+"double" "character" "character" "double" "double"
+Longitude First.IP.Number Last.IP.Number
+"double" "double" "double"
+
+
+>library(data.table)
+>hist_country=data.table(Country=unique(IP_DATA_ALL_FIX[is.na(IP_DATA_ALL_FIX ['Country']) == 0, ]$Country
+))
+
+>setorder(hist_country,'Country')
+>hist_country_with_id=rowid_to_column(hist_country, var = "RowIDCountry")
+>View(hist_country_fix)
+>IP_DATA_COUNTRY_FREQ=data.table(with(IP_DATA_ALL_FIX, table(Country)))
+>View(IP_DATA_COUNTRY_FREQ)
+
+•	The two biggest subset volumes are from the US and GB.
+• The US has just over four times the data as GB.
+
+>hist_latitude =data.table(Latitude=unique(IP_DATA_ALL_FIX [is.na(IP_DATA_ALL_with_ID ['Latitude']) == 0, ]$Lati
+tude))
+>setkeyv(hist_latitude, 'Latitude')
+>setorder(hist_latitude)
+>ist_latitude_with_id=rowid_to_column(hist_latitude, var = "RowID")
+>View(hist_latitude_with_id)
+>IP_DATA_Latitude_FREQ=data.table(with(IP_DATA_ALL_FIX,table(Latitude)))
+>View(IP_DATA_Latitude_FREQ)
+
+•	The two biggest data volumes are from latitudes 51.5092 and 40.6888.
+•	The spread appears to be nearly equal between the top-two latitudes.
+
+>sapply(IP_DATA_ALL_FIX[,'Latitude'], min, na.rm=TRUE)
+
+Latitude 40.6888
+
+What does this tell you?
+
+Fact: The range of latitude for the Northern Hemisphere is from 0 to 90. So, if you do not have any latitudes
+farther south than 40.6888, you can improve your retrieve routine.
+
+>sapply(IP_DATA_ALL_FIX[,'Country'], min, na.rm=TRUE)
+
+Country "DE"
+Minimum business frequency is from DE – Denmark.
+
+>sapply(IP_DATA_ALL_FIX[,'Latitude'], max, na.rm=TRUE)
+
+Latitude
+51.5895
+
+>sapply(IP_DATA_ALL_FIX[,'Country'], max, na.rm=TRUE)
+
+Country
+"US"
+The result is 51.5895. What does this tell you?
+Fact: The range in latitude for the Northern Hemisphere is from 0 to 90. So, if you do not have any latitudes
+more northerly than 51.5895, you can improve your retrieve routine.
+
+>sapply(IP_DATA_ALL_FIX [,'Latitude'], mean, na.rm=TRUE)
+
+Latitude
+46.69097
+
+>sapply(IP_DATA_ALL_FIX [,'Latitude'], median, na.rm=TRUE)
+
+Latitude
+48.15
+>sapply(IP_DATA_ALL_FIX [,'Latitude'], range, na.rm=TRUE)
+
+Latitude
+[1,] 40.6888
+[2,] 51.5895
+
+>sapply(IP_DATA_ALL_FIX [,'Latitude'], quantile, na.rm=TRUE)
+
+Latitude
+0% 40.6888
+25% 40.7588
+50% 48.1500
+75% 51.5092
+100% 51.5895
+
+>sapply(IP_DATA_ALL_FIX [,'Latitude'], sd, na.rm=TRUE)
+
+Latitude
+4.890387
+
+>sapply(IP_DATA_ALL_FIX [,'Longitude'], sd, na.rm=TRUE)
+
+Longitude
+38.01702
+
+B. Program to retrieve different attributes of data.
+
+##### C:\ VKHCG\01-Vermeulen\01-Retrieve\Retrive_IP_DATA_ALL.py###
+
+import sys
+import os
+import pandas as pd
+################################################################
+Base='C:/VKHCG'
+################################################################
+sFileName=Base + '/01-Vermeulen/00-RawData/IP_DATA_ALL.csv'
+print('Loading :',sFileName)
+IP_DATA_ALL=pd.read_csv(sFileName,header=0,low_memory=False, encoding="latin-1")
+################################################################
+sFileDir=Base + '/01-Vermeulen/01-Retrieve/01-EDS/02-Python'
+if not os.path.exists(sFileDir):
+os.makedirs(sFileDir)
+print('Rows:', IP_DATA_ALL.shape[0])
+print('Columns:', IP_DATA_ALL.shape[1])
+print('### Raw Data Set #####################################')
+for i in range(0,len(IP_DATA_ALL.columns)):
+print(IP_DATA_ALL.columns[i],type(IP_DATA_ALL.columns[i]))
+print('### Fixed Data Set ###################################')
+IP_DATA_ALL_FIX=IP_DATA_ALL
+for i in range(0,len(IP_DATA_ALL.columns)):
+cNameOld=IP_DATA_ALL_FIX.columns[i] + ' '
+cNameNew=cNameOld.strip().replace(" ", ".")
+IP_DATA_ALL_FIX.columns.values[i] = cNameNew
+print(IP_DATA_ALL.columns[i],type(IP_DATA_ALL.columns[i]))
+################################################################
+#print(IP_DATA_ALL_FIX.head())
+################################################################
+print('Fixed Data Set with ID')
+IP_DATA_ALL_with_ID=IP_DATA_ALL_FIX
+IP_DATA_ALL_with_ID.index.names = ['RowID']
+#print(IP_DATA_ALL_with_ID.head())
+sFileName2=sFileDir + '/Retrieve_IP_DATA.csv'
+IP_DATA_ALL_with_ID.to_csv(sFileName2, index = True, encoding="latin-1")
+################################################################
+print('### Done!! )
+
+#C. Data Pattern
+
+To determine a pattern of the data values, Replace all 
+alphabet values with an uppercase case A, 
+all numbers with an uppercase N, 
+and replace any spaces with a lowercase letter b 
+and all other unknown characters with a lowercase u. 
+As a result, “Good Book 101” becomes “AAAAbAAAAbNNN.”
+This pattern creation is beneficial for designing any specific assess rules. This pattern view of data is a quick way to
+identify common patterns or determine standard layouts.
+
+library(readr)
+library(data.table)
+FileName=paste0('c:/VKHCG/01-Vermeulen/00-RawData/IP_DATA_ALL.csv')
+IP_DATA_ALL <- read_csv(FileName)
+hist_country=data.table(Country=unique(IP_DATA_ALL$Country))
+pattern_country=data.table(Country=hist_country$Country,PatternCountry=hist_country$Country)
+
+oldchar=c(letters,LETTERS)
+newchar=replicate(length(oldchar),"A")
+for (r in seq(nrow(pattern_country)))
+{
+s=pattern_country[r,]$PatternCountry;
+for (c in seq(length(oldchar))){
+s=chartr(oldchar[c],newchar[c],s)
+};
+for (n in seq(0,9,1)){
+s=chartr(as.character(n),"N",s)
+};
+s=chartr(" ","b",s)
+s=chartr(".","u",s)
+pattern_country[r,]$PatternCountry=s;
+};
+
+#Example 2: Data Pattern
+
+This is a common use of patterns to separate common standards and structures. Pattern can b loaded in separate retrieve procedures. If the same two patterns, NNNNuNNuNN and uuNNuNNuNN, are found, you can send NNNNuNNuNN directly to be converted into a date, while uuNNuNNuNN goes through
+a quality-improvement process to then route back to the same queue as NNNNuNNuNN, once it complies.
+
+library(readr)
+library(data.table)
+Base='C:/VKHCG'
+FileName=paste0(Base,'/01-Vermeulen/00-RawData/IP_DATA_ALL.csv')
+IP_DATA_ALL <- read_csv(FileName)
+hist_latitude=data.table(Latitude=unique(IP_DATA_ALL$Latitude))
+pattern_latitude=data.table(latitude=hist_latitude$Latitude,
+Patternlatitude=as.character(hist_latitude$Latitude))
+oldchar=c(letters,LETTERS)
+newchar=replicate(length(oldchar),"A")
+for (r in seq(nrow(pattern_latitude))){
+s=pattern_latitude[r,]$Patternlatitude;
+for (c in seq(length(oldchar))){
+s=chartr(oldchar[c],newchar[c],s)
+};
+for (n in seq(0,9,1)){
+s=chartr(as.character(n),"N",s)
+};
+s=chartr(" ","b",s)
+s=chartr("+","u",s)
+s=chartr("-","u",s)
+s=chartr(".","u",s)
+pattern_latitude[r,]$Patternlatitude=s;
+};
+setorder(pattern_latitude,latitude)
+View(pattern_latitude[1:3])
+
+
+D. Loading IP_DATA_ALL:
+
+
+This data set contains all the IP address allocations in the world. It will help you to locate your customers when interacting with them online.
+
+Create a new Python script file and save it as Retrieve-
+
+IP_DATA_ALL.py in directory
+C:\VKHCG\01-Vermeulen\01-Retrieve.
+
+##############Retrieve-IP_DATA_ALL.py########################
+# -*- coding: utf-8 -*-
+################################################################
+
+import sys
+import os
+import pandas as pd
+################################################################
+Base='C:/VKHCG'
+################################################################
+sFileName=Base + '/01-Vermeulen/00-RawData/IP_DATA_ALL.csv'
+print('Loading :',sFileName)
+IP_DATA_ALL=pd.read_csv(sFileName,header=0,low_memory=False, encoding="latin-1")
+################################################################
+sFileDir=Base + '/01-Vermeulen/01-Retrieve/01-EDS/02-Python'
+if not os.path.exists(sFileDir):
+os.makedirs(sFileDir)
+print('Rows:', IP_DATA_ALL.shape[0])
+print('Columns:', IP_DATA_ALL.shape[1])
+print('### Raw Data Set #####################################')
+for i in range(0,len(IP_DATA_ALL.columns)):
+print(IP_DATA_ALL.columns[i],type(IP_DATA_ALL.columns[i]))
+print('### Fixed Data Set ###################################')
+IP_DATA_ALL_FIX=IP_DATA_ALL
+for i in range(0,len(IP_DATA_ALL.columns)):
+cNameOld=IP_DATA_ALL_FIX.columns[i] + ' '
+cNameNew=cNameOld.strip().replace(" ", ".")
+IP_DATA_ALL_FIX.columns.values[i] = cNameNew
+print(IP_DATA_ALL.columns[i],type(IP_DATA_ALL.columns[i]))
+################################################################
+#print(IP_DATA_ALL_FIX.head())
+################################################################
+print('Fixed Data Set with ID')
+IP_DATA_ALL_with_ID=IP_DATA_ALL_FIX
+IP_DATA_ALL_with_ID.index.names = ['RowID']
+#print(IP_DATA_ALL_with_ID.head())
+sFileName2=sFileDir + '/Retrieve_IP_DATA.csv'
+IP_DATA_ALL_with_ID.to_csv(sFileName2, index = True, encoding="latin-1")
+################################################################
+print('### Done!! ############################################')
+
+Similarly execute the code for:
+
+Loading IP_DATA_C_VKHCG
+Loading IP_DATA_CORE
+Loading COUNTRY-CODES
+Loading DE_Billboard_Locations
+Loading GB_Postcode_Full
+Loading GB_Postcode_Warehouse
+Loading GB_Postcode_Shops
+Loading Euro_ExchangeRates
+Load: Profit_And_Loss
+
+#Vermeulen PLC
+
+The company has two main jobs on which to focus your attention:
+• Designing a routing diagram for company
+• Planning a schedule of jobs to be performed for the router network
+A. Designing a routing diagram for company
+
+Start your Python editor and create a text file named 
+Retrieve-IP_Routing.py in directory.
+C:\VKHCG\01-Vermeulen\01-Retrieve.
+################################################################
+# -*- coding: utf-8 -*-
+################################################################
+import sys
+import os
+import pandas as pd
+from math import radians, cos, sin, asin, sqrt
+################################################################
+def haversine(lon1, lat1, lon2, lat2,stype):
+"""
+Calculate the great circle distance between two points
+on the earth (specified in decimal degrees)
+"""
+# convert decimal degrees to radians
+lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+# haversine formula
+dlon = lon2 - lon1
+dlat = lat2 - lat1
+a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+c = 2 * asin(sqrt(a))
+if stype == 'km':
+r = 6371 # Radius of earth in kilometers
+else:
+r = 3956 # Radius of earth in miles
+d=round(c * r,3)
+return d
+################################################################
+Base='C:/VKHCG'
+################################################################
+sFileName=Base + '/01-Vermeulen/00-RawData/IP_DATA_CORE.csv'
+print('Loading :',sFileName)
+IP_DATA_ALL=pd.read_csv(sFileName,header=0,low_memory=False,
+usecols=['Country','Place Name','Latitude','Longitude'], encoding="latin-1")
+################################################################
+sFileDir=Base + '/01-Vermeulen/01-Retrieve/01-EDS/02-Python'
+if not os.path.exists(sFileDir):
+os.makedirs(sFileDir)
+################################################################
+IP_DATA = IP_DATA_ALL.drop_duplicates(subset=None, keep='first', inplace=False)
+IP_DATA.rename(columns={'Place Name': 'Place_Name'}, inplace=True)
+IP_DATA1 = IP_DATA
+IP_DATA1.insert(0, 'K', 1)
+IP_DATA2 = IP_DATA1
+################################################################
+print(IP_DATA1.shape)
+
+IP_CROSS=pd.merge(right=IP_DATA1,left=IP_DATA2,on='K')
+IP_CROSS.drop('K', axis=1, inplace=True)
+IP_CROSS.rename(columns={'Longitude_x': 'Longitude_from', 'Longitude_y': 'Longitude_to'},
+inplace=True)
+IP_CROSS.rename(columns={'Latitude_x': 'Latitude_from', 'Latitude_y': 'Latitude_to'},
+inplace=True)
+IP_CROSS.rename(columns={'Place_Name_x': 'Place_Name_from', 'Place_Name_y':
+'Place_Name_to'}, inplace=True)
+IP_CROSS.rename(columns={'Country_x': 'Country_from', 'Country_y': 'Country_to'},
+inplace=True)
+################################################################
+IP_CROSS['DistanceBetweenKilometers'] = IP_CROSS.apply(lambda row:
+haversine(
+row['Longitude_from'],
+row['Latitude_from'],
+row['Longitude_to'],
+row['Latitude_to'],
+'km')
+,axis=1)
+################################################################
+IP_CROSS['DistanceBetweenMiles'] = IP_CROSS.apply(lambda row:
+haversine(
+row['Longitude_from'],
+row['Latitude_from'],
+row['Longitude_to'],
+row['Latitude_to'],
+'miles')
+,axis=1)
+print(IP_CROSS.shape)
+sFileName2=sFileDir + '/Retrieve_IP_Routing.csv'
+IP_CROSS.to_csv(sFileName2, index = False, encoding="latin-1")
+################################################################
+print('### Done!! ############################################')
+
+Out:Total Records: 22501
+So, the distance between a router in New York (40.7528, -73.9725) to another router in New York
+(40.7214, -74.0052) is 4.448 kilometers, or 2.762 miles.
+
+B.Building a Diagram for the Scheduling of Jobs
+
+Start your Python editor and create a text file named Retrieve-Router-Location.py in directory.
+C:\VKHCG\01-Vermeulen\01-Retrieve.
+######### Retrieve-Router-Location.py ###########
+# -*- coding: utf-8 -*-
+################################################################
+import sys
+import os
+import pandas as pd
+################################################################
+InputFileName='IP_DATA_CORE.csv'
+OutputFileName='Retrieve_Router_Location.csv'
+################################################################
+Base='C:/VKHCG'
+################################################################
+sFileName=Base + '/01-Vermeulen/00-RawData/' + InputFileName
+print('Loading :',sFileName)
+IP_DATA_ALL=pd.read_csv(sFileName,header=0,low_memory=False,
+usecols=['Country','Place Name','Latitude','Longitude'], encoding="latin-1")
+################################################################
+IP_DATA_ALL.rename(columns={'Place Name': 'Place_Name'}, inplace=True)
+################################################################
+sFileDir=Base + '/01-Vermeulen/01-Retrieve/01-EDS/02-Python'
+if not os.path.exists(sFileDir):
+os.makedirs(sFileDir)
+ROUTERLOC = IP_DATA_ALL.drop_duplicates(subset=None, keep='first', inplace=False)
+print('Rows :',ROUTERLOC.shape[0])
+print('Columns :',ROUTERLOC.shape[1])
+sFileName2=sFileDir + '/' + OutputFileName
+ROUTERLOC.to_csv(sFileName2, index = False, encoding="latin-1")
+################################################################
+print('### Done!! ############################################')
+
+#Ker AG
+
+A.Picking Content for Billboards
+
+Start your Python editor and create a text file named 
+Retrieve-DE-Billboard-Locations.py in directory.
+C:\VKHCG\02-Krennwallner\01-Retrieve.
+################# Retrieve-DE-Billboard-Locations.py ###############
+# -*- coding: utf-8 -*-
+################################################################
+import sys
+import os
+import pandas as pd
+################################################################
+InputFileName='DE_Billboard_Locations.csv'
+OutputFileName='Retrieve_DE_Billboard_Locations.csv'
+Company='02-Krennwallner'
+################################################################
+Base='C:/VKHCG'
+print('################################')
+print('Working Base :',Base, ' using ', sys.platform)
+print('################################')
+################################################################
+Base='C:/VKHCG'
+sFileName=Base + '/' + Company + '/00-RawData/' + InputFileName
+print('Loading :',sFileName)
+IP_DATA_ALL=pd.read_csv(sFileName,header=0,low_memory=False,
+usecols=['Country','PlaceName','Latitude','Longitude'])
+IP_DATA_ALL.rename(columns={'PlaceName': 'Place_Name'}, inplace=True)
+################################################################
+sFileDir=Base + '/' + Company + '/01-Retrieve/01-EDS/02-Python'
+if not os.path.exists(sFileDir):
+os.makedirs(sFileDir)
+ROUTERLOC = IP_DATA_ALL.drop_duplicates(subset=None, keep='first', inplace=False)
+print('Rows :',ROUTERLOC.shape[0])
+print('Columns :',ROUTERLOC.shape[1])
+sFileName2=sFileDir + '/' + OutputFileName
+ROUTERLOC.to_csv(sFileName2, index = False)
+################################################################
+print('### Done!! ############################################')
+
+B.Understanding Your Online Visitor Data
+
+Let’s retrieve the visitor data for the billboard we have in Germany.
+Several times it was found that common and important information is buried somewhere in the company’s various data sources. Investigating any direct suppliers or consumers’ upstream or downstream data sources attached to the specific business process is necessary. That is part of your skills that you are applying to data science. Numerous insightful fragments of information was found in the data sources surrounding a customer’s business processes.
+
+Start your Python editor and create a file named 
+Retrieve-Online-Visitor.py in directory
+C:\VKHCG\02-Krennwallner\01-Retrieve.
+################################################################
+# -*- coding: utf-8 -*-
+################################################################
+import sys
+import os
+import pandas as pd
+import gzip as gz
+################################################################
+InputFileName='IP_DATA_ALL.csv'
+OutputFileName='Retrieve_Online_Visitor'
+CompanyIn= '01-Vermeulen'
+CompanyOut= '02-Krennwallner'
+################################################################
+Base='C:/VKHCG'
+print('################################')
+print('Working Base :',Base, ' using ', sys.platform)
+print('################################')
+################################################################
+Base='C:/VKHCG'
+sFileName=Base + '/' + CompanyIn + '/00-RawData/' + InputFileName
+print('Loading :',sFileName)
+IP_DATA_ALL=pd.read_csv(sFileName,header=0,low_memory=False,
+usecols=['Country','Place Name','Latitude','Longitude','First IP Number','Last IP Number'])
+IP_DATA_ALL.rename(columns={'Place Name': 'Place_Name'}, inplace=True)
+IP_DATA_ALL.rename(columns={'First IP Number': 'First_IP_Number'}, inplace=True)
+IP_DATA_ALL.rename(columns={'Last IP Number': 'Last_IP_Number'}, inplace=True)
+################################################################
+sFileDir=Base + '/' + CompanyOut + '/01-Retrieve/01-EDS/02-Python'
+if not os.path.exists(sFileDir):
+os.makedirs(sFileDir)
+visitordata = IP_DATA_ALL.drop_duplicates(subset=None, keep='first', inplace=False)
+visitordata10=visitordata.head(10)
+print('Rows :',visitordata.shape[0])
+print('Columns :',visitordata.shape[1])
+print('Export CSV')
+sFileName2=sFileDir + '/' + OutputFileName + '.csv'
+visitordata.to_csv(sFileName2, index = False)
+print('Store All:',sFileName2)
+sFileName3=sFileDir + '/' + OutputFileName + '_10.csv'
+visitordata10.to_csv(sFileName3, index = False)
+print('Store 10:',sFileName3)
+for z in ['gzip', 'bz2', 'xz']:
+if z == 'gzip':
+sFileName4=sFileName2 + '.gz'
+else:
+sFileName4=sFileName2 + '.' + z
+visitordata.to_csv(sFileName4, index = False, compression=z)
+print('Store :',sFileName4)
+################################################################
+print('Export JSON')
+for sOrient in ['split','records','index', 'columns','values','table']:
+sFileName2=sFileDir + '/' + OutputFileName + '_' + sOrient + '.json'
+visitordata.to_json(sFileName2,orient=sOrient,force_ascii=True)
+print('Store All:',sFileName2)
+sFileName3=sFileDir + '/' + OutputFileName + '_10_' + sOrient + '.json'
+visitordata10.to_json(sFileName3,orient=sOrient,force_ascii=True)
+print('Store 10:',sFileName3)
+sFileName4=sFileName2 + '.gz'
+file_in = open(sFileName2, 'rb')
+file_out = gz.open(sFileName4, 'wb')
+file_out.writelines(file_in)
+file_in.close()
+file_out.close()
+print('Store GZIP All:',sFileName4)
+sFileName5=sFileDir + '/' + OutputFileName + '_' + sOrient + '_UnGZip.json'
+file_in = gz.open(sFileName4, 'rb')
+file_out = open(sFileName5, 'wb')
+file_out.writelines(file_in)
+file_in.close()
+file_out.close()
+print('Store UnGZIP All:',sFileName5)
+################################################################
+print('### Done!! ############################################')
+
+#XML processing.
+
+Start Python editor and create a file named 
+Retrieve-Online-Visitor-XML.py 
+in directory
+C:\VKHCG\02-Krennwallner\01-Retrieve.
+################################################################
+# -*- coding: utf-8 -*-
+################################################################
+import sys
+import os
+import pandas as pd
+import xml.etree.ElementTree as ET
+################################################################
+def df2xml(data):
+header = data.columns
+root = ET.Element('root')
+for row in range(data.shape[0]):
+entry = ET.SubElement(root,'entry')
+for index in range(data.shape[1]):
+schild=str(header[index])
+child = ET.SubElement(entry, schild)
+if str(data[schild][row]) != 'nan':
+child.text = str(data[schild][row])
+else:
+child.text = 'n/a'
+entry.append(child)
+result = ET.tostring(root)
+return result
+################################################################
+def xml2df(xml_data):
+root = ET.XML(xml_data)
+all_records = []
+for i, child in enumerate(root):
+record = {}
+for subchild in child:
+record[subchild.tag] = subchild.text
+all_records.append(record)
+return pd.DataFrame(all_records)
+################################################################
+InputFileName='IP_DATA_ALL.csv'
+OutputFileName='Retrieve_Online_Visitor.xml'
+CompanyIn= '01-Vermeulen'
+CompanyOut= '02-Krennwallner'
+################################################################
+if sys.platform == 'linux':
+Base=os.path.expanduser('~') + '/VKHCG'
+else:
+Base='C:/VKHCG'
+################################################################
+print('################################')
+print('Working Base :',Base, ' using ', sys.platform)
+print('################################')
+################################################################
+sFileName=Base + '/' + CompanyIn + '/00-RawData/' + InputFileName
+print('Loading :',sFileName)
+IP_DATA_ALL=pd.read_csv(sFileName,header=0,low_memory=False)
+IP_DATA_ALL.rename(columns={'Place Name': 'Place_Name'}, inplace=True)
+IP_DATA_ALL.rename(columns={'First IP Number': 'First_IP_Number'}, inplace=True)
+IP_DATA_ALL.rename(columns={'Last IP Number': 'Last_IP_Number'}, inplace=True)
+IP_DATA_ALL.rename(columns={'Post Code': 'Post_Code'}, inplace=True)
+################################################################
+sFileDir=Base + '/' + CompanyOut + '/01-Retrieve/01-EDS/02-Python'
+if not os.path.exists(sFileDir):
+os.makedirs(sFileDir)
+visitordata = IP_DATA_ALL.head(10000)
+print('Original Subset Data Frame')
+print('Rows :',visitordata.shape[0])
+print('Columns :',visitordata.shape[1])
+print(visitordata)
+print('Export XML')
+sXML=df2xml(visitordata)
+sFileName=sFileDir + '/' + OutputFileName
+file_out = open(sFileName, 'wb')
+file_out.write(sXML)
+file_out.close()
+print('Store XML:',sFileName)
+xml_data = open(sFileName).read()
+unxmlrawdata=xml2df(xml_data)
+print('Raw XML Data Frame')
+print('Rows :',unxmlrawdata.shape[0])
+print('Columns :',unxmlrawdata.shape[1])
+print(unxmlrawdata)
+unxmldata = unxmlrawdata.drop_duplicates(subset=None, keep='first', inplace=False)
+print('Deduplicated XML Data Frame')
+print('Rows :',unxmldata.shape[0])
+print('Columns :',unxmldata.shape[1])
+print(unxmldata)
+#################################################################
+#print('### Done!! ############################################')
+
+#Hillman Ltd
+
+A.Planning Shipping Rules for Best-Fit International Logistics
+
+(Befor this Program, first understand the business terms explained in the reference book)
+
+EXW—Ex Works (Named Place of Delivery)
+
+By this term, the seller makes the goods available at its premises or at another namedplace. This term places the maximum obligation on the buyer and minimum obligationson the seller.
+
+Start yourPython editor and create a file named 
+Retrieve-Incoterm-EXW.py in directory
+C:\VKHCG\03-Hillman\01-Retrieve.
+################################################################
+# -*- coding: utf-8 -*-                            
+import os
+import sys
+import pandas as pd
+IncoTerm='EXW'
+InputFileName='Incoterm_2010.csv'
+OutputFileName='Retrieve_Incoterm_' + IncoTerm + '_RuleSet.csv'
+Company='03-Hillman'
+################################################################
+Base='C:/VKHCG'
+print('################################')
+print('Working Base :',Base, ' using ', sys.platform)
+print('################################')
+sFileDir=Base + '/' + Company + '/01-Retrieve/01-EDS/02-Python'
+if not os.path.exists(sFileDir):
+os.makedirs(sFileDir)
+################################################################
+### Import Incoterms
+################################################################
+sFileName=Base + '/' + Company + '/00-RawData/' + InputFileName
+print('###########')
+print('Loading :',sFileName)
+IncotermGrid=pd.read_csv(sFileName,header=0,low_memory=False)
+IncotermRule=IncotermGrid[IncotermGrid.Shipping_Term == IncoTerm]
+print('Rows :',IncotermRule.shape[0])
+print('Columns :',IncotermRule.shape[1])
+print('###########')
+print(IncotermRule)
+sFileName=sFileDir + '/' + OutputFileName
+IncotermRule.to_csv(sFileName, index = False)
+print('### Done!! ############################################')
+
+FCA—Free Carrier (Named Place of Delivery)
+
+Under this condition, the seller delivers the goods, cleared for export, at a named place.
+If I were to buy Practical Data Science at an overseas duty-free shop and then pick it up at the duty-free desk before taking it home, and the shop has shipped it FCA— Free Carrier—to the duty-free desk, the moment  pay at the register, the ownership is transferred to me, but if anything happens to the book between the shop and the duty-free desk, the shop will have to pay. It is only once I pick it up at the desk that I will have to pay, if anything happens. So, the moment I take the book, the transaction becomes EXW, so I have to pay any necessary import duties on arrival in my home country. Let’s see what the data science finds. 
+
+Start your Python editor and create a text file named 
+Retrieve-Incoterm-FCA.py in directory .\VKHCG\03-Hillman\01-Retrieve.
+################################################################
+# -*- coding: utf-8 -*-
+################################################################
+import os
+import sys
+import pandas as pd
+################################################################
+IncoTerm='FCA'
+InputFileName='Incoterm_2010.csv'
+OutputFileName='Retrieve_Incoterm_' + IncoTerm + '_RuleSet.csv'
+Company='03-Hillman'
+################################################################
+Base='C:/VKHCG'
+print('################################')
+print('Working Base :',Base, ' using ', sys.platform)
+print('################################')
+################################################################
+sFileDir=Base + '/' + Company + '/01-Retrieve/01-EDS/02-Python'
+if not os.path.exists(sFileDir):
+os.makedirs(sFileDir)
+################################################################
+### Import Incoterms
+################################################################
+sFileName=Base + '/' + Company + '/00-RawData/' + InputFileName
+print('###########')
+print('Loading :',sFileName)
+IncotermGrid=pd.read_csv(sFileName,header=0,low_memory=False)
+IncotermRule=IncotermGrid[IncotermGrid.Shipping_Term == IncoTerm]
+print('Rows :',IncotermRule.shape[0])
+print('Columns :',IncotermRule.shape[1])
+print('###########')
+print(IncotermRule)
+sFileName=sFileDir + '/' + OutputFileName
+IncotermRule.to_csv(sFileName, index = False)
+################################################################
+print('### Done!! ############################################')
+
+
+CPT—Carriage Paid To (Named Place of Destination)
+
+The seller, under this term, pays for the carriage of the goods up to the named place of destination. However, the goods are considered to be delivered when they have been handed over to the first carrier, so that the risk transfers to the buyer upon handing the goods over to the carrier at the place of shipment in the country of
+export.
+
+Start your Python editor and create a file named 
+Retrieve-Incoterm-CPT.py in directory
+C:\VKHCG\03-Hillman\01-Retrieve.
+
+
+CIP—Carriage and Insurance Paid To (Named Place of Destination)
+
+This term is generally similar to the preceding CPT, with the exception that the seller is required to obtain insurance for the goods while in transit. Following is the data science version.
+
+DAP—Delivered at Place (Named Place of Destination)
+
+According to Incoterm 2010’s definition, DAP—Delivered at Place—means that, at the disposal of the buyer, the seller delivers when the goods are placed on the arriving means of transport, ready for unloading at the named place of destination. Under DAP terms, the risk passes from seller to buyer from the point of destination mentioned in the contract of delivery.
+
+
+DDP—Delivered Duty Paid (Named Place of Destination)
+
+By this term, the seller is responsible for delivering the goods to the named place in the country of the buyer and pays all costs in bringing the goods to the destination, including import duties and taxes. The seller is not responsible for unloading. This term places the maximum obligations on the seller and minimum obligations
+on the buyer. No risk or responsibility is transferred to the buyer until delivery of the goods at the named place of destination.
+
+B.Possible Shipping Routes
+
+There are numerous potential shipping routes available to the company. The retrieve step can generate the potential set, by using a route combination generator. This will give you a set of routes, but it is highly unlikely that you will ship along all of them. It is simply a population of routes that can be used by the data science to find the optimum solution.
+
+Start your Python editor and create a file named 
+Retrieve-Warehouse-Incoterm-Chains.py in directory
+C:\VKHCG\03-Hillman\01-Retrieve.
+
+You will see a file named
+Retrieve_Incoterm_Chain_GB_Warehouse.csv in C:\VKHCG\03-Hillman\01-Retrieve\
+01-EDS\02-Python. Open this file, and you should see a data set similar to the following:
+
+
+C.Adopt New Shipping Containers
+
+Adopting the best packing option for shipping in containers will require that I introduce a new concept.
+Shipping of containers is based on a concept reducing the packaging you use down to an optimum set of sizes having the following requirements:
+• The product must fit within the box formed by the four sides of a cube.
+• The product can be secured using packing foam, which will fill any void volume in the packaging.
+• Packaging must fit in shipping containers with zero space gaps.
+• Containers can only hold product that is shipped to a single warehouse, shop, or customer.
+
+Start your Python editor and create a text file named 
+Retrieve-Container-Plan.py in directory .
+C:\VKHCG\03-Hillman\01-Retrieve.
+################################################################
+# -*- coding: utf-8 -*-
+################################################################
+import sys
+import os
+import pandas as pd
+################################################################
+ContainerFileName='Retrieve_Container.csv'
+BoxFileName='Retrieve_Box.csv'
+ProductFileName='Retrieve_Product.csv'
+Company='03-Hillman'
+################################################################
+Base='C:/VKHCG'
+################################################################
+print('################################')
+print('Working Base :',Base, ' using ', sys.platform)
+print('################################')
+################################################################
+sFileDir=Base + '/' + Company + '/01-Retrieve/01-EDS/02-Python'
+if not os.path.exists(sFileDir):
+os.makedirs(sFileDir)
+################################################################
+### Create the Containers
+(The business requires a model that simulates shipping containers of dimensions 1
+meter × 1 meter × 1 meter to 21 meters × 10 meters × 6 meters. So, let’s simulate these.)
+################################################################
+containerLength=range(1,21)
+containerWidth=range(1,10)
+containerHeigth=range(1,6)
+containerStep=1
+c=0
+for l in containerLength:
+for w in containerWidth:
+for h in containerHeigth:
+containerVolume=(l/containerStep)*(w/containerStep)*(h/containerStep)
+c=c+1
+ContainerLine=[('ShipType', ['Container']),
+('UnitNumber', ('C'+format(c,"06d"))),
+('Length',(format(round(l,3),".4f"))),
+('Width',(format(round(w,3),".4f"))),
+('Height',(format(round(h,3),".4f"))),
+('ContainerVolume',(format(round(containerVolume,6),".6f")))]
+if c==1:
+ContainerFrame = pd.DataFrame.from_dict(ContainerLine)
+else:
+ContainerRow = pd.DataFrame.from_dict(ContainerLine)
+ContainerFrame = ContainerFrame.append(ContainerRow)
+ContainerFrame.index.name = 'IDNumber'
+print('################')
+print('## Container')
+print('################')
+print('Rows :',ContainerFrame.shape[0])
+print('Columns :',ContainerFrame.shape[1])
+print('################')
+################################################################
+sFileContainerName=sFileDir + '/' + ContainerFileName
+ContainerFrame.to_csv(sFileContainerName, index = False)
+################################################################
+## Create valid Boxes with packing foam
+(Your second simulation is the cardboard boxes for the packing of the products. The
+requirement is for boxes having a dimension of 100 centimeters × 100 centimeters × 100
+centimeters to 2.1 meters × 2.1 meters × 2.1 meters. You can also use between zero and
+600 centimeters of packing foam to secure any product in the box.)
+################################################################
+boxLength=range(1,21)
+boxWidth=range(1,21)
+boxHeigth=range(1,21)
+packThick=range(0,6)
+boxStep=10
+b=0
+for l in boxLength:
+for w in boxWidth:
+for h in boxHeigth:
+for t in packThick:
+boxVolume=round((l/boxStep)*(w/boxStep)*(h/boxStep),6)
+productVolume=round(((l-t)/boxStep)*((w-t)/boxStep)*((h-t)/boxStep),6)
+if productVolume > 0:
+b=b+1
+BoxLine=[('ShipType', ['Box']),
+('UnitNumber', ('B'+format(b,"06d"))),
+('Length',(format(round(l/10,6),".6f"))),
+('Width',(format(round(w/10,6),".6f"))),
+('Height',(format(round(h/10,6),".6f"))),
+('Thickness',(format(round(t/5,6),".6f"))),
+('BoxVolume',(format(round(boxVolume,9),".9f"))),
+('ProductVolume',(format(round(productVolume,9),".9f")))]
+if b==1:
+BoxFrame = pd.DataFrame.from_dict(BoxLine)
+else:
+BoxRow = pd.DataFrame.from_dict(BoxLine)
+BoxFrame = BoxFrame.append(BoxRow)
+BoxFrame.index.name = 'IDNumber'
+print('#################')
+print('## Box')
+print('#################')
+print('Rows :',BoxFrame.shape[0])
+print('Columns :',BoxFrame.shape[1])
+print('#################')
+################################################################
+sFileBoxName=sFileDir + '/' + BoxFileName
+BoxFrame.to_csv(sFileBoxName, index = False)
+################################################################
+## Create valid Product
+(Now, your third model is for the products. The requirement is for products having a dimension of 100 centimeters × 100 centimeters × 100 centimeters to 2.1 meters × 2.1 meters × 2.1 meters.)
+################################################################
+productLength=range(1,21)
+productWidth=range(1,21)
+productHeigth=range(1,21)
+productStep=10
+p=0
+for l in productLength:
+for w in productWidth:
+for h in productHeigth:
+productVolume=round((l/productStep)*(w/productStep)*(h/productStep),6)
+if productVolume > 0:
+p=p+1
+ProductLine=[('ShipType', ['Product']),
+('UnitNumber', ('P'+format(p,"06d"))),
+('Length',(format(round(l/10,6),".6f"))),
+('Width',(format(round(w/10,6),".6f"))),
+('Height',(format(round(h/10,6),".6f"))),
+('ProductVolume',(format(round(productVolume,9),".9f")))]
+if p==1:
+ProductFrame = pd.DataFrame.from_dict(ProductLine)
+else:
+ProductRow = pd.DataFrame.from_dict(ProductLine)
+ProductFrame = ProductFrame.append(ProductRow)
+BoxFrame.index.name = 'IDNumber'
+print('#################')
+print('## Product')
+print('#################')
+print('Rows :',ProductFrame.shape[0])
+print('Columns :',ProductFrame.shape[1])
+print('#################')
+################################################################
+sFileProductName=sFileDir + '/' + ProductFileName
+ProductFrame.to_csv(sFileProductName, index = False)
+################################################################
+#################################################################
+print('### Done!! ############################################')
+
+See the container data file Retrieve_Container.csv and Retrieve_Box.csv in
+C:\VKHCG\03-Hillman\01-Retrieve\01-EDS\02-Python.
+
+D.Create a Delivery Route
+
+The model enables you to generate a complex routing plan for the shipping routes of the company.
+ 
+Start yourPython editor and create a text file named Retrieve-Route-Plan.py in directory .
+C:\VKHCG\03-Hillman\01-Retrieve.
+################################################################
+# -*- coding: utf-8 -*-
+import os
+import sys
+import pandas as pd
+from geopy.distance import vincenty
+################################################################
+InputFileName='GB_Postcode_Warehouse.csv'
+OutputFileName='Retrieve_GB_Warehouse.csv'
+Company='03-Hillman'
+################################################################
+Base='C:/VKHCG'
+print('################################')
+print('Working Base :',Base, ' using ', sys.platform)
+print('################################')
+################################################################
+sFileDir=Base + '/' + Company + '/01-Retrieve/01-EDS/02-Python'
+if not os.path.exists(sFileDir):
+os.makedirs(sFileDir)
+################################################################
+sFileName=Base + '/' + Company + '/00-RawData/' + InputFileName
+print('###########')
+print('Loading :',sFileName)
+Warehouse=pd.read_csv(sFileName,header=0,low_memory=False)
+WarehouseClean=Warehouse[Warehouse.latitude != 0]
+WarehouseGood=WarehouseClean[WarehouseClean.longitude != 0]
+WarehouseGood.drop_duplicates(subset='postcode', keep='first', inplace=True)
+WarehouseGood.sort_values(by='postcode', ascending=1)
+################################################################
+sFileName=sFileDir + '/' + OutputFileName
+WarehouseGood.to_csv(sFileName, index = False)
+################################################################
+WarehouseLoop = WarehouseGood.head(20)
+for i in range(0,WarehouseLoop.shape[0]):
+print('Run :',i,' =======>>>>>>>>>>',WarehouseLoop['postcode'][i])
+WarehouseHold = WarehouseGood.head(10000)
+WarehouseHold['Transaction']=WarehouseHold.apply(lambda row:
+'WH-to-WH'
+,axis=1)
+OutputLoopName='Retrieve_Route_' + 'WH-' + WarehouseLoop['postcode'][i] + '_Route.csv'
+WarehouseHold['Seller']=WarehouseHold.apply(lambda row:
+'WH-' + WarehouseLoop['postcode'][i]
+,axis=1)
+WarehouseHold['Seller_Latitude']=WarehouseHold.apply(lambda row:
+WarehouseHold['latitude'][i],axis=1)
+WarehouseHold['Seller_Longitude']=WarehouseHold.apply(lambda row:
+WarehouseLoop['longitude'][i],axis=1)
+WarehouseHold['Buyer']=WarehouseHold.apply(lambda row:
+'WH-' + row['postcode'],axis=1)
+WarehouseHold['Buyer_Latitude']=WarehouseHold.apply(lambda row:
+row['latitude'],axis=1)
+WarehouseHold['Buyer_Longitude']=WarehouseHold.apply(lambda row:
+row['longitude'],axis=1)
+WarehouseHold['Distance']=WarehouseHold.apply(lambda row: round(
+vincenty((WarehouseLoop['latitude'][i],WarehouseLoop['longitude'][i]),
+(row['latitude'],row['longitude'])).miles,6),axis=1)
+WarehouseHold.drop('id', axis=1, inplace=True)
+WarehouseHold.drop('postcode', axis=1, inplace=True)
+WarehouseHold.drop('latitude', axis=1, inplace=True)
+WarehouseHold.drop('longitude', axis=1, inplace=True)
+################################################################
+sFileLoopName=sFileDir + '/' + OutputLoopName
+WarehouseHold.to_csv(sFileLoopName, index = False)
+#################################################################
+print('### Done!! ############################################')
+
+#Global Post Codes
+
+Open RStudio and use R to process the following R script:
+Retrieve-Postcode-Global.r.
+
+
+library(readr)
+All_Countries <- read_delim("C:/VKHCG/03-Hillman/00-RawData/All_Countries.txt",
+"\t", col_names = FALSE,
+col_types = cols(
+X12 = col_skip(),
+X6 = col_skip(),
+X7 = col_skip(),
+X8 = col_skip(),
+X9 = col_skip()),
+na = "null", trim_ws = TRUE)
+write.csv(All_Countries,
+file = "C:/VKHCG/03-Hillman/01-Retrieve/01-EDS/01-R/Retrieve_All_Countries.csv")
+
+
+#
+Clark Ltd
+
+
+Clark is the financial powerhouse of the group. It must process all the money-related data sources.
+Forex-The first financial duty of the company is to perform any foreign exchange trading.
+Forex Base Data-Previously, you found a single data source (Euro_ExchangeRates.csv) for forex rates in Clark.
+ 
+The relevant file is Retrieve_Retrieve_Euro_ExchangeRates.csv in directory
+C:\ VKHCG\04-Clark\01-Retrieve\01-EDS\01-R. 
+So, that data is ready.
+
+Financials - Clark generates the financial statements for all the group’s companies.
+Financial Base Data - You found a single data source (Profit_And_Loss.csv) in Clark for
+financials and, as mentioned previously, a single data source (Euro_ExchangeRates.csv) for forex rates. 
+
+The file relevant file is Retrieve_Profit_And_Loss.csv in directory
+C:\VKHCG\04-Clark\01-Retrieve\ 01-EDS\01-R.
+
+
+Person Base Data
+Start Python editor and create a file named Retrieve-PersonData.py in directory .
+C:\VKHCG\04-Clark\01-Retrieve.
+################################################################
+# -*- coding: utf-8 -*-
+################################################################
+import sys
+import os
+import shutil
+import zipfile
+import pandas as pd
+################################################################
+Base='C:/VKHCG'
+################################################################
+print('################################')
+print('Working Base :',Base, ' using ', sys.platform)
+print('################################')
+################################################################
+Company='04-Clark'
+ZIPFiles=['Data_female-names','Data_male-names','Data_last-names']
+for ZIPFile in ZIPFiles:
+InputZIPFile=Base+'/'+Company+'/00-RawData/' + ZIPFile + '.zip'
+OutputDir=Base+'/'+Company+'/01-Retrieve/01-EDS/02-Python/' + ZIPFile
+OutputFile=Base+'/'+Company+'/01-Retrieve/01-EDS/02-Python/Retrieve-'+ZIPFile+'.csv'
+zip_file = zipfile.ZipFile(InputZIPFile, 'r')
+zip_file.extractall(OutputDir)
+zip_file.close()
+t=0
+for dirname, dirnames, filenames in os.walk(OutputDir):
+for filename in filenames:
+sCSVFile = dirname + '/' + filename
+t=t+1
+if t==1:
+NameRawData=pd.read_csv(sCSVFile,header=None,low_memory=False)
+NameData=NameRawData
+else:
+NameRawData=pd.read_csv(sCSVFile,header=None,low_memory=False)
+NameData=NameData.append(NameRawData)
+NameData.rename(columns={0 : 'NameValues'},inplace=True)
+NameData.to_csv(OutputFile, index = False)
+shutil.rmtree(OutputDir)
+print('Process: ',InputZIPFile)
+#################################################################
+print('### Done!! ############################################')
+#################################################################
+This generates three files named
+Retrieve-Data_female-names.csv
+Retrieve-Data_male-names.csv
+Retrieve-Data_last-names.csv
+
+#Connecting to other Data Sources
+
+A. Program to connect to different data sources.
+
+SQLite:
+######################################### #######################
+# -*- coding: utf-8 -*-
+################################################################
+import sqlite3 as sq
+import pandas as pd
+################################################################
+Base='C:/VKHCG'
+sDatabaseName=Base + '/01-Vermeulen/00-RawData/SQLite/vermeulen.db'
+conn = sq.connect(sDatabaseName)
+################################################################
+sFileName='C:/VKHCG/01-Vermeulen/01-Retrieve/01-EDS/02-Python/Retrieve_IP_DATA.csv'
+print('Loading :',sFileName)
+IP_DATA_ALL_FIX=pd.read_csv(sFileName,header=0,low_memory=False)
+IP_DATA_ALL_FIX.index.names = ['RowIDCSV']
+sTable='IP_DATA_ALL'
+print('Storing :',sDatabaseName,' Table:',sTable)
+IP_DATA_ALL_FIX.to_sql(sTable, conn, if_exists="replace")
+print('Loading :',sDatabaseName,' Table:',sTable)
+TestData=pd.read_sql_query("select * from IP_DATA_ALL;", conn)
+print('################')
+print('## Data Values')
+print('################')
+print(TestData)
+print('################')
+print('## Data Profile')
+print('################')
+print('Rows :',TestData.shape[0])
+print('Columns :',TestData.shape[1])
+print('################')
+print('### Done!! ############################################')
+
+MySQL:
+
+Open MySql
+Create a database “DataScience”
+Create a python file and add the following code:
+################ Connection With MySQL ######################
+import mysql.connector
+conn = mysql.connector.connect(host='localhost',
+database='DataScience',
+user='root',
+password='root')
+conn.connect
+if(conn.is_connected):
+print('###### Connection With MySql Established Successfullly ##### ')
+else:
+print('Not Connected -- Check Connection Properites')
+
+Microsoft Excel
+
+##################Retrieve-Country-Currency.py
+################################################################
+# -*- coding: utf-8 -*-
+################################################################
+import os
+import pandas as pd
+################################################################
+Base='C:/VKHCG'
+################################################################
+sFileDir=Base + '/01-Vermeulen/01-Retrieve/01-EDS/02-Python'
+#if not os.path.exists(sFileDir):
+#os.makedirs(sFileDir)
+################################################################
+CurrencyRawData = pd.read_excel('C:/VKHCG/01-Vermeulen/00-RawData/Country_Currency.xlsx')
+sColumns = ['Country or territory', 'Currency', 'ISO-4217']
+CurrencyData = CurrencyRawData[sColumns]
+CurrencyData.rename(columns={'Country or territory': 'Country', 'ISO-4217':
+'CurrencyCode'}, inplace=True)
+CurrencyData.dropna(subset=['Currency'],inplace=True)
+CurrencyData['Country'] = CurrencyData['Country'].map(lambda x: x.strip())
+CurrencyData['Currency'] = CurrencyData['Currency'].map(lambda x:
+x.strip())
+CurrencyData['CurrencyCode'] = CurrencyData['CurrencyCode'].map(lambda x:
+x.strip())
+print(CurrencyData)
+print('~~~~~~ Data from Excel Sheet Retrived Successfully ~~~~~~~ ')
+################################################################
+sFileName=sFileDir + '/Retrieve-Country-Currency.csv'
+CurrencyData.to_csv(sFileName, index = False)
+
+#Assessing Data
+
+Assess Superstep:
+
+Data quality refers to the condition of a set of qualitative or quantitative variables. Data quality is a multidimensional measurement of the acceptability of specific data sets. In business, data quality is measured to determine whether data can be used as a basis for reliable intelligence extraction for supporting organizational decisions. Data profiling involves observing in your data sources all the viewpoints that the information offers.
+The main goal is to determine if individual viewpoints are accurate and complete. 
+The Assess superstep determines what additional processing to apply to the entries that are noncompliant.
+
+Errors
+
+Typically, one of four things can be done with an error to the data.
+1. Accept the Error
+2. Reject the Error
+3. Correct the Error
+4. Create a Default Value
+
+A. Perform error management on the given data using pandas package.
+
+
+Python pandas package enables several automatic error-management features.
+File Location: C:\VKHCG\01-Vermeulen\02-Assess
+Missing Values in Pandas:
+
+i. Drop the Columns Where All Elements Are Missing Values
+
+####Assess-Good-Bad-01.py####
+# -*- coding: utf-8 -*-
+################################################################
+import sys
+import os
+import pandas as pd
+################################################################
+Base='C:/VKHCG'
+################################################################
+print('################################')
+print('Working Base :',Base, ' using ', sys.platform)
+print('################################')
+################################################################
+sInputFileName='Good-or-Bad.csv'
+sOutputFileName='Good-or-Bad-01.csv'
+Company='01-Vermeulen'
+################################################################
+Base='C:/VKHCG'
+################################################################
+sFileDir=Base + '/' + Company + '/02-Assess/01-EDS/02-Python'
+if not os.path.exists(sFileDir):
+os.makedirs(sFileDir)
+################################################################
+### Import Warehouse
+################################################################
+sFileName=Base + '/' + Company + '/00-RawData/' + sInputFileName
+print('Loading :',sFileName)
+RawData=pd.read_csv(sFileName,header=0)
+print('################################')
+print('## Raw Data Values')
+print('################################')
+print(RawData)
+print('################################')
+print('## Data Profile')
+print('################################')
+print('Rows :',RawData.shape[0])
+print('Columns :',RawData.shape[1])
+print('################################')
+################################################################
+sFileName=sFileDir + '/' + sInputFileName
+RawData.to_csv(sFileName, index = False)
+################################################################
+TestData=RawData.dropna(axis=1, how='all')
+################################################################
+print('################################')
+print('## Test Data Values')
+print('################################')
+print(TestData)
+print('################################')
+print('## Data Profile')
+print('################################')
+print('Rows :',TestData.shape[0])
+print('Columns :',TestData.shape[1])
+print('################################')
+################################################################
+sFileName=sFileDir + '/' + sOutputFileName
+TestData.to_csv(sFileName, index = False)
+################################################################
+print('################################')
+print('### Done!! #####################')
+print('################################')
+
+All of column E has been deleted, owing to the fact that all values in that column were missing values/errors.
+
+ii. Drop the Columns Where Any of the Elements Is Missing Values
+
+######Assess-Good-Bad 02.py#########
+# -*- coding: utf-8 -*-
+import sys
+import os
+import pandas as pd
+################################################################
+Base='C:/VKHCG'
+sInputFileName='Good-or-Bad.csv'
+sOutputFileName='Good-or-Bad-02.csv'
+Company='01-Vermeulen'
+################################################################
+Base='C:/VKHCG'
+################################################################
+print('################################')
+print('Working Base :',Base, ' using ', sys.platform)
+print('################################')
+################################################################
+sFileDir=Base + '/' + Company + '/02-Assess/01-EDS/02-Python'
+if not os.path.exists(sFileDir):
+os.makedirs(sFileDir)
+################################################################
+### Import Warehouse
+################################################################
+sFileName=Base + '/' + Company + '/00-RawData/' + sInputFileName
+print('Loading :',sFileName)
+RawData=pd.read_csv(sFileName,header=0)
+print('################################')
+print('## Raw Data Values')
+print('################################')
+print(RawData)
+print('################################')
+print('## Data Profile')
+print('################################')
+print('Rows :',RawData.shape[0])
+print('Columns :',RawData.shape[1])
+print('################################')
+################################################################
+sFileName=sFileDir + '/' + sInputFileName
+RawData.to_csv(sFileName, index = False)
+################################################################
+TestData=RawData.dropna(axis=1, how='any')
+################################################################
+print('################################')
+print('## Test Data Values')
+print('################################')
+print(TestData)
+print('################################')
+print('## Data Profile')
+print('################################')
+print('Rows :',TestData.shape[0])
+print('Columns :',TestData.shape[1])
+print('################################')
+################################################################
+sFileName=sFileDir + '/' + sOutputFileName
+TestData.to_csv(sFileName, index = False)
+################################################################
+print('################################')
+print('### Done!! #####################')
+
+iii. Keep Only the Rows That Contain a Maximum of Two Missing Values
+
+#############Assess-Good-Bad-03.py ################
+# -*- coding: utf-8 -*-
+################################################################
+import sys
+import os
+import pandas as pd
+################################################################
+sInputFileName='Good-or-Bad.csv'
+sOutputFileName='Good-or-Bad-03.csv'
+Company='01-Vermeulen'
+Base='C:/VKHCG'
+################################################################
+print('################################')
+print('Working Base :',Base, ' using Windows ~~~~')
+print('################################')
+################################################################
+sFileDir=Base + '/' + Company + '/02-Assess/01-EDS/02-Python'
+if not os.path.exists(sFileDir):
+os.makedirs(sFileDir)
+################################################################
+### Import Warehouse
+################################################################
+sFileName=Base + '/' + Company + '/00-RawData/' + sInputFileName
+print('Loading :',sFileName)
+RawData=pd.read_csv(sFileName,header=0)
+print('################################')
+print('## Raw Data Values')
+print('################################')
+print(RawData)
+print('################################')
+print('## Data Profile')
+print('################################')
+print('Rows :',RawData.shape[0])
+print('Columns :',RawData.shape[1])
+print('################################')
+################################################################
+sFileName=sFileDir + '/' + sInputFileName
+RawData.to_csv(sFileName, index = False)
+################################################################
+TestData=RawData.dropna(thresh=2)
+print('################################')
+print('## Test Data Values')
+print('################################')
+print(TestData)
+print('################################')
+print('## Data Profile')
+print('################################')
+print('Rows :',TestData.shape[0])
+print('Columns :',TestData.shape[1])
+print('################################')
+sFileName=sFileDir + '/' + sOutputFileName
+TestData.to_csv(sFileName, index = False)
+################################################################
+print('################################')
+print('### Done!! #####################')
+
+Row with more than two missing values got deleted.
+
+
